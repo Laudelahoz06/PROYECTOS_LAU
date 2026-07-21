@@ -1,0 +1,13 @@
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+canvas {
+    background-color: #111;
+   /* border: 2px solid #00f; /* Un borde azul como el laberinto */
+}
