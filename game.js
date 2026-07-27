@@ -2,19 +2,9 @@
 const inicio = new Audio('../sounds/inicio.mp3');
 inicio.preload = 'auto';
 
-
-
-// 1. Configuración del Canvas
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-// 2. Variables del Juego
-const tileSize = 20; // Tamaño de cada casilla (20x20 píxeles)
-let score = 0;
-let dots = 0;
-
-
 const soundsDeadh = new Audio('../sounds/Muerte.mp3');
+const soundsEatDot = new Audio('../sounds/comer.mp3');
+
 function dieSound() {
     if (squares[pacmanCurrentIndex].classList.contains('ghost') && 
         !squares[pacmanCurrentIndex].classList.contains('scared-ghost')) {
@@ -23,18 +13,9 @@ function dieSound() {
 }
 
 
-// 3. El Jugador (Pac-Man)
-// Usamos x, y en términos de casillas, no píxeles
-const player = {
-    // posición inicial (en casillas) 9,3.
-    x: 9, 
-    y: 3,
-    // tamaño visual del objeto
-    size: tileSize,
-    color: 'yellow',
-    dx: 0, // Dirección X (1, -1, o 0)    
-    dy: 0  // Dirección Y (1, -1, o 0)
-};
+// 1. Configuración del Canvas
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
 
 // 4. El Laberinto.
@@ -42,7 +23,6 @@ const player = {
 // 2 = Punto especial. 
 // 1 = Pared. 
 // 3 = Camino vacío. 0
-
 
 const map = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -58,59 +38,29 @@ const map = [
   [1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1],
   [3,3,3,1,0,1,0,0,0,0,0,0,0,1,0,1,3,3,3],
   [1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1],
-  [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,2,0,0,0,0,1,0,0,0,0,0,0,2,0,1],
   [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
-  [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
+  [1,0,0,1,0,0,0,0,2,0,0,0,0,0,0,1,0,0,1],
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
+
 
 // Guardar copia inicial del mapa para poder recargar todo más tarde
 const initialMap = map.map(row => row.slice());
 
-// Vidas de Pac-Man
-let lives = 3;
-function dibujarpuntuacion() {
-    ctx.fillStyle = "white";
-    ctx.font = "20px Arial"
-    ctx.fillText("Puntuación: " + score, 10, 20);
-}
 
-// Dibuja las vidas (bolitas amarillas) en la esquina superior derecha
-function drawLives() {
-    const radius = 6;
-    const padding = 8;
+// 2. Variables del Juego
+const tileSize = 20; // Tamaño de cada casilla (20x20 píxeles)
+let score = 0;
+let dots = 0;
 
-    // Empezar desde la esquina derecha
-    for (let i = 0; i < lives; i++) {
-        const x = canvas.width - padding - i * (radius * 2 + 6) - radius;
-        const y = 14; // cerca de la parte superior, junto a la puntuación
-        ctx.fillStyle = 'yellow';
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fill();
-        // pequeño borde negro
-        ctx.strokeStyle = 'black';
-        ctx.stroke();
-    }
-}
-// Funciones para crear/actualizar la puntuación
-function setScore(newScore) {
-    score = newScore;
-    // Redibujar la puntuación en el canvas
-    dibujarpuntuacion();
-}
 
-function addScore(amount) {
-    score += amount;
-    // Redibujar la puntuación en el canvas cada vez que cambia
-    dibujarpuntuacion();
-}
 // Ajustar el tamaño del canvas al mapa
 canvas.width = map[0].length * tileSize;
 canvas.height = map.length * tileSize;
-// (Continuación de game.js)
 
-// Dibuja todo el mapa (paredes y puntos)
+
+// Dibuja todo el mapa 
 function drawMap() {
     for (let y = 0; y < map.length; y++) {
         for (let x = 0; x < map[y].length; x++) {
@@ -148,6 +98,64 @@ function drawMap() {
     }
 }
 
+
+//  Jugador (Pac-Man)
+// Usamos x, y en términos de casillas, no píxeles
+const player = {
+    // posición inicial (en casillas) 9,3.
+    x: 9, 
+    y: 3,
+    // tamaño visual del objeto
+    size: tileSize,
+    color: 'yellow',
+    dx: 0, // Dirección X (1, -1, o 0)    
+    dy: 0  // Dirección Y (1, -1, o 0)
+};
+
+
+// Vidas de Pac-Man
+let lives = 3;
+
+function dibujarpuntuacion() {
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("Puntuación: " + score, 10, 20);
+}
+
+
+// Dibuja las vidas (bolitas amarillas) en la esquina superior derecha
+function drawLives() {
+    const radius = 6;
+    const padding = 8;
+
+    // Empezar desde la esquina derecha
+    for (let i = 0; i < lives; i++) {
+        const x = canvas.width - padding - i * (radius * 2 + 6) - radius;
+        const y = 14; // cerca de la parte superior, junto a la puntuación
+        ctx.fillStyle = 'yellow';
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        // pequeño borde negro
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+    }
+}
+
+// Funciones para crear/actualizar la puntuación
+function setScore(newScore) {
+    score = newScore;
+    // Redibujar la puntuación en el canvas
+    dibujarpuntuacion();
+}
+
+function addScore(amount) {
+    score += amount;
+    // Redibujar la puntuación en el canvas cada vez que cambia
+    dibujarpuntuacion();
+}
+
+
 // Dibuja a Pac-Man
 function drawPlayer() {
     ctx.fillStyle = player.color;
@@ -171,34 +179,34 @@ function drawPlayer() {
 
    const mouthOpening = 0.2 * Math.PI;
    const startAngle = mouthOpening;                     // Límite inferior de la boca
-    const endAngle = (Math.PI * 2) - mouthOpening;      // Límite superior de la boca
+   const endAngle = (Math.PI * 2) - mouthOpening;      // Límite superior de la boca
 
-    ctx.beginPath();
-    //  Movemos el origen al centro para formar la punta de la boca
-    ctx.moveTo(centerX, centerY);
-    
-    // Dibujamos el arco desde el borde inferior de la boca hasta el superior
-    ctx.arc(
-        centerX, 
-        centerY, 
-        radius, 
-        startAngle, 
-        endAngle
-    );
-    
-    // Cerramos la figura volviendo al centro y rellenamos
-    ctx.closePath();
-    ctx.fill();
-
+   ctx.beginPath();
+   // Movemos el origen al centro para formar la punta de la boca
+   ctx.moveTo(centerX, centerY);
+   
+   // Dibujamos el arco desde el borde inferior de la boca hasta el superior
+   ctx.arc(
+       centerX, 
+       centerY, 
+       radius, 
+       startAngle, 
+       endAngle
+   );
+   
+   // Cerramos la figura volviendo al centro y rellenamos
+   ctx.closePath();
+   ctx.fill();
 }
+
 
 // --- GHOSTS -----------------------------------------------------
 // Array de ghosts (posiciones en tiles y color)
 const ghosts = [
-    { x: 9, y: 7, color: 'red', dx: 0, dy: 0, size: tileSize },
-    { x: 9, y: 9, color: 'pink', dx: 0, dy: 0, size: tileSize },
-    { x: 8, y: 9, color: 'cyan', dx: 0, dy: 0, size: tileSize },
-    { x: 10, y: 9, color: 'orange', dx: 0, dy: 0, size: tileSize }
+    { x: 9, y: 7, color: 'red', dx: 0, dy: 0, size: tileSize, isScared: false },
+    { x: 9, y: 9, color: 'pink', dx: 0, dy: 0, size: tileSize, isScared: false },
+    { x: 8, y: 9, color: 'cyan', dx: 0, dy: 0, size: tileSize, isScared: false },
+    { x: 10, y: 9, color: 'orange', dx: 0, dy: 0, size: tileSize, isScared: false }
 ];
 
 // Guardar posiciones iniciales para poder resetear los ghosts si hace falta
@@ -211,7 +219,7 @@ function drawGhost(ghost) {
     const radius = tileSize / 2.5;
 
     // Cuerpo (círculo)
-    ctx.fillStyle = ghost.color;
+    ctx.fillStyle = ghost.isScared ? 'skyblue' : ghost.color;
     ctx.beginPath();
     ctx.arc(cx, cy, radius, Math.PI, 0, false); // arco superior
     ctx.lineTo(cx + radius, cy + radius); // bajar para cerrar forma
@@ -223,7 +231,6 @@ function drawGhost(ghost) {
 function drawGhosts() {
     ghosts.forEach(g => drawGhost(g));
 }
-
 
 
 // Movimiento de ghosts 
@@ -284,7 +291,9 @@ function moveGhosts() {
         let nextDirection = { dx: ghost.dx, dy: ghost.dy };
 
         if (distanceToPlayer <= 8) {
-            nextDirection = chooseChaseDirection(ghost);
+            if (!ghost.isScared) {
+                nextDirection = chooseChaseDirection(ghost);
+            }
         } else if (ghost.dx === 0 && ghost.dy === 0 || Math.random() < 0.15) {
             const val = getValidDirections(ghost.x, ghost.y);
             nextDirection = chooseRandomDirection(val);
@@ -318,6 +327,7 @@ function moveGhosts() {
     });
 }
 
+
 // Comprueba colisión entre Pac-Man y ghosts (por casilla)
 function ComprobarCol() {
     for (const [i, ghost] of ghosts.entries()) {
@@ -330,66 +340,77 @@ function ComprobarCol() {
         const ghostSize = ghost.size || tileSize; // fallback
 
         // Detección por caja 
-        if (
+        if( 
             playerPx < ghostPx + ghostSize &&
             playerPx + player.size > ghostPx &&
             playerPy < ghostPy + ghostSize &&
-            playerPy + player.size > ghostPy
-        ) {
-            // El jugador perdió una vida
-            lives = Math.max(0, lives - 1);
-            soundsDeadh.play();
+            playerPy + player.size > ghostPy){
+                if (ghost.isScared ) {
+                    addScore(200); // Otorgar 200 puntos por fantasma comido
 
+                    ghost.x = ghostStartPositions[i].x;
+                    ghost.y = ghostStartPositions[i].y;
+                    ghost.dx = 0;
+                    ghost.dy = 0;
+                    ghost.isScared = false; // Resetear el estado asustado del fantasma
+                    try { soundsEatDot.play(); } catch (e) {}
+                } else {
+                // El jugador perdió una vida
+                lives = Math.max(0, lives - 1);
+                soundsDeadh.play();
 
-            if (lives > 0) {
-                // Avisar y reiniciar posiciones (sin recargar todo)
-                alert(`¡ATRPADO! Te quedan ${lives} vidas`);
-                player.x = 1;
-                player.y = 1;
-                player.dx = 0;
-                player.dy = 0;
-                ghosts.forEach((g, idx) => {
-                    g.x = ghostStartPositions[idx].x;
-                    g.y = ghostStartPositions[idx].y;
-                    g.dx = 0;
-                    g.dy = 0;
-                });
-            } else {
-                // Se acabaron las vidas: recargar todo
-                alert('Game Over');
-                inicio.play();
-                // Restaurar mapa desde initialMap
-                for (let y = 0; y < map.length; y++) {
-                    for (let x = 0; x < map[y].length; x++) {
-                        map[y][x] = initialMap[y][x];
-                    }
-                }
-
-                // Reiniciar puntuación
-                setScore(0);
-
-                // Reiniciar vidas
-                lives = 3;
-
-                // Recontar puntos especiales (si aplica)
-                dots = 0;
-                map.forEach(row => {
-                    row.forEach(tile => {
-                        if (tile === 2) dots++;
+                if (lives > 0) {
+                    // Avisar y reiniciar posiciones (sin recargar todo)
+                    alert(`¡ATRAPADoooO! Te quedan ${lives} vidas`);
+                    player.x = 1;
+                    player.y = 1;
+                    player.dx = 0;
+                    player.dy = 0;
+                    ghosts.forEach((g, idx) => {
+                        g.x = ghostStartPositions[idx].x;
+                        g.y = ghostStartPositions[idx].y;
+                        g.dx = 0;
+                        g.dy = 0;
                     });
-                });
+                } else {
+                    // Se acabaron las vidas: recargar todo
+                    alert('Game Over');
+                    inicio.play();
 
-                // Reiniciar posiciones del jugador y ghosts
-                player.x = 1;
-                player.y = 1;
-                player.dx = 0;
-                player.dy = 0;
-                ghosts.forEach((g, idx) => {
-                    g.x = ghostStartPositions[idx].x;
-                    g.y = ghostStartPositions[idx].y;
-                    g.dx = 0;
-                    g.dy = 0;
-                });
+                    // Restaurar mapa desde initialMap
+                    for (let y = 0; y < map.length; y++) {
+                        for (let x = 0; x < map[y].length; x++) {
+                            map[y][x] = initialMap[y][x];
+                        }
+                    }
+
+                    // Reiniciar puntuación
+                    setScore(0);
+
+                    // Reiniciar vidas
+                    lives = 3;
+
+                    // Recontar puntos especiales (si aplica)
+                    dots = 0;
+                    map.forEach(row => {
+                        row.forEach(tile => {
+                            if (tile === 0 || tile === 2) dots++;
+                        });
+                    });
+
+                    // Reiniciar posiciones del jugador y ghosts
+                    player.x = 1;
+                    player.y = 1;
+                    player.dx = 0;
+                    player.dy = 0;
+                    ghosts.forEach((g, idx) => {
+                        g.x = ghostStartPositions[idx].x;
+                        g.y = ghostStartPositions[idx].y;
+                        g.dx = 0;
+                        g.dy = 0;
+                    });
+                }
+        
             }
 
             // Salir después de manejar la colisión
@@ -397,7 +418,7 @@ function ComprobarCol() {
         }
     }
 }
-// (Continuación de game.js)
+
 
 // Bandera para evitar múltiples alertas de victoria
 let gameWon = false;
@@ -429,8 +450,8 @@ document.addEventListener('keydown', e => {
             break;
     }
 });
-// (Continuación de game.js)
-  
+
+
 // Función principal del juego (Game Loop)
 function gameLoop() {
     
@@ -445,7 +466,7 @@ function gameLoop() {
             player.dx = desiredDx;
             player.dy = desiredDy;
 
-             // Solo limpiamos la dirección deseada una vez que pudimos realizar el giro
+            // Solo limpiamos la dirección deseada una vez que pudimos realizar el giro
             desiredDx = 0;
             desiredDy = 0;
         }
@@ -475,7 +496,12 @@ function gameLoop() {
         map[player.y][player.x] = 3; // El punto desaparece
 
         // Usar la función para actualizar puntuación
-        addScore(1);
+        if (currentTile === 2) {
+            addScore(50); // 2. Aumentar la puntuación
+            setGhostsFrightened(); // 3. Activar el modo asustado en los fantasmas
+        } else {
+            addScore(1);
+        }
 
         // reproducir sonido de comer
         try { soundsEatDot.play(); } catch (e) { /* no bloquear juego si falla audio */ }
@@ -492,28 +518,14 @@ function gameLoop() {
                 document.location.reload();
             }, 50);
         }
+    }
 
-        // Comprobar si Pac-Man está en una casilla con un punto especial (2)
-if (map[player.y][player.x] === 2) {
-    // 1. Quitar el punto del mapa
-    map[player.y][player.x] = 0;
-
-    // 2. Aumentar la puntuación
-    score += 50; // Ajusta los puntos según tu juego
-
-    // 3. Activar el modo asustado en los fantasmas
-    setGhostsFrightened();
-}
-
-}
     // limite
-    if (player.x <0) player.x = 0;
-    if (player.y <0) player.y = 0;
+    if (player.x < 0) player.x = 0;
+    if (player.y < 0) player.y = 0;
     if (player.x + player.size > canvas.width) player.x = canvas.width - player.size;
-    if (player.y + player.size > canvas.height) player.y = canvas.height - player.size
+    if (player.y + player.size > canvas.height) player.y = canvas.height - player.size;
 
-    
-    
     // 4. Comprobar si no hay mas puntos ganar
 
     // 5. Borrar y volver a dibujar todo
@@ -526,9 +538,10 @@ if (map[player.y][player.x] === 2) {
     dibujarpuntuacion();
     // Dibujar vidas
     drawLives();
-    eatDot();
 
+    if (typeof eatDot === 'function') eatDot();
 }
+
 
 // ghosts 
 let scaredTimeout = null;
@@ -544,13 +557,17 @@ function setGhostsFrightened() {
         ghost.isScared = true;
     });
 
-    // Duración del poder (por ejemplo, 7000 milisegundos = 7 segundos)
+    // Duración del poder (7 segundos)
     scaredTimeout = setTimeout(() => {
         ghosts.forEach(ghost => {
             ghost.isScared = false;
         });
     }, 7000);
+
+    // fantasmas sean comibless
 }
+
+
 // --- INICIAR EL JUEGO ---
 
 // Contar cuántos puntos hay al inicio (tanto 0 como 2 son comestibles)
