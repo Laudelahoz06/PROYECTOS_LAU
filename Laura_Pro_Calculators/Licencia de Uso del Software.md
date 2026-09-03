@@ -1,5 +1,5 @@
 **Licencia de Uso del Software – Laura's Pro Calculators
-Versión 1.0:
+Versión 1.0:**
 Este acuerdo de licencia establece los términos y condiciones bajo los cuales usted puede usar la aplicación Calculadora Multifuncional, que incluye las siguientes funciones:
 •	Calculadora básica (operaciones matemáticas comunes).
 •	Calculadora de IMC (Índice de Masa Corporal), que proporciona una clasificación orientativa del peso corporal.
